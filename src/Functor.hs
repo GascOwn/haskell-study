@@ -1,7 +1,12 @@
+{-# LANGUAGE RankNTypes #-}
+
 module Functor ( replaceWithP
                , replacedMaybe
                , doubleLift
                , tripleLift
+               , liftedInc
+               , liftedShow
+               , maybeToList
                ) where
 
 -- Functors must abide the identity law fmap id a == id a
@@ -34,14 +39,27 @@ values = [Just "Ave", Nothing, Just "whohoo"]
 
 -- Each composition of fmap goes one layer deeper in the structure:
 
--- this gives "ppp"
+-- this returns "ppp"
 replacedMaybe :: [Char]
 replacedMaybe = replaceWithP <$> values
 
--- this gives [Just 'p', Nothing, Just 'p']
+-- this returns [Just 'p', Nothing, Just 'p']
 doubleLift :: [Maybe Char]
 doubleLift = (fmap . fmap) replaceWithP values
 
--- this gives [Just "ppp", Nothing, Just "pppppp"]
+-- this returns [Just "ppp", Nothing, Just "pppppp"]
 tripleLift :: [Maybe String]
 tripleLift = (fmap . fmap . fmap) replaceWithP values
+
+liftedInc :: (Functor f, Num b) => f b -> f b
+liftedInc = fmap (+1)
+
+liftedShow :: (Functor f, Show a) => f a -> f String
+liftedShow = fmap show
+
+-- it's also possible to do the opposite, preserving content while changing structure
+type Nat f g = forall a . f a -> g a
+
+maybeToList :: Nat Maybe []
+maybeToList Nothing = []
+maybeToList (Just a) = [a]
